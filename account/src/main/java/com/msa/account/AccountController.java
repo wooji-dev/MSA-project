@@ -19,7 +19,7 @@ public class AccountController {
     }
 
     @PutMapping("{userid}")
-    ResponseEntity<AccountDTO> deposit(@PathVariable("userid") Long userid, @RequestParam("amount") BigDecimal amount) {
+    ResponseEntity<AccountDTO> deposit(@PathVariable Long userid, @RequestParam("amount") BigDecimal amount) {
         var account = service.deposit(userid, amount);
         return ResponseEntity.ok(account);
     }
@@ -27,6 +27,12 @@ public class AccountController {
     @PatchMapping("{userid}")
     ResponseEntity<AccountDTO> withdrawal(@RequestBody AccountWithdrawalDTO dto) {
         var account = service.withdrawal(dto);
+        return ResponseEntity.ok(account);
+    }
+
+    @GetMapping("{userid}")
+    ResponseEntity<AccountDTO> getAccount(@PathVariable Long userid) {
+        var account = service.getAccountInfo(userid);
         return ResponseEntity.ok(account);
     }
 

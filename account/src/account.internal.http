@@ -1,4 +1,4 @@
-@baseUrl=http://localhost:8082/api/accounts
+@baseUrl=http://localhost:8082/internal/accounts
 
 ### create account
 POST {{baseUrl}}
@@ -17,19 +17,6 @@ Content-Type: application/json
 {
   "username": "user2",
   "userid": 2,
-  "passwd": "123456"
-}
-
-### deposit
-PUT {{baseUrl}}/1?amount=2000
-
-### withdrawal
-PATCH {{baseUrl}}/1
-Content-Type: application/json
-
-{
-  "userid": 1,
-  "amount": 1000,
   "passwd": "123456"
 }
 
