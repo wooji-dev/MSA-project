@@ -1,7 +1,8 @@
 package com.msa.stock;
 
 import com.msa.stock.client.AccountClient;
-import com.msa.stock.client.AccountWithdrawalDTO;
+import com.msa.stock.client.AddPointDTO;
+import com.msa.stock.client.WithdrawalDTO;
 import com.msa.stock.client.UserClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,46 +24,45 @@ public class StockService {
     }
 
     // @Transactional
-    public StockDTO purchaseStock(StockPurchaseDTO dto) {
+    public StockDTO purchase(StockPurchaseDTO dto) {
         boolean didWithdrawal = false;
-        boolean didSaveStock = false;   // 실제 DB 저장 여부로 의미를 명확히
+        boolean didPurchased = false;   // 실제 DB 저장 여부로 의미를 명확히
 
-        Long userid = dto.getUserid();
-        Stock stock = repository.findByUserid(userid)
-                .orElseThrow(() -> new IllegalArgumentException("Notfound Stock"));
-
-        // 보상에 필요한 '이전 상태' 백업
-        Integer prevCnt = stock.getCnt();
-        BigDecimal prevPrice = stock.getPrice();
-
-        AccountWithdrawalDTO withdrawalDTO = new AccountWithdrawalDTO(dto.getPrice(), userid, dto.getPasswd());
+        Stock stock = repository.findByUserid(dto.getUserid())
+                .orElseThrow(() -> new IllegalArgumentException("NotFound Stock"));
+        BigDecimal amount = null;
+        BigDecimal newPrice = null;
 
         try {
-            accountClient.withdrawal(withdrawalDTO, userid);
+            amount = dto.getPrice().multiply(BigDecimal.valueOf(dto.getCnt()));
+            accountClient.withdrawal(dto.getUserid(),
+                    new WithdrawalDTO(amount, dto.getUserid(), dto.getAccountPasswd()));
             didWithdrawal = true;
 
+            // 주식 체결
             stock.setCnt(stock.getCnt() + dto.getCnt());
-            stock.setPrice(stock.getPrice().add(dto.getPrice()));
-            repository.save(stock);
-            didSaveStock = true;
+            newPrice = dto.getPrice().multiply(BigDecimal.valueOf(dto.getCnt()));
+            stock.setPrice(stock.getPrice().add(newPrice));
+            StockDTO newer = mapper.toDTO(repository.save(stock));
+            didPurchased = true;
 
-            userClient.addPoint(userid, dto.getCnt());
+            // 활동 포인트 지급
+            userClient.addPoint(new AddPointDTO(dto.getUserid(), dto.getCnt()));
 
-            return mapper.toDTO(stock);
-
+            return newer;
         } catch (Exception e) {
             // 성공한 단계를 역순으로 되돌린다
 
-            // 2) 주식 저장을 되돌림 (이전 값으로 복구 후 다시 저장)
-            if (didSaveStock) {
-                stock.setCnt(prevCnt);
-                stock.setPrice(prevPrice);
-                repository.save(stock);
-            }
-
             // 1) 출금을 되돌림 (환불)
             if (didWithdrawal) {
-                accountClient.deposit(userid, dto.getPrice());
+                accountClient.deposit(dto.getUserid(), amount);
+            }
+
+            // 2) 주식 저장을 되돌림 (이전 값으로 복구 후 다시 저장)
+            if (didPurchased) {
+                stock.setCnt(stock.getCnt() - dto.getCnt());
+                stock.setPrice(stock.getPrice().subtract(newPrice));
+                repository.save(stock);
             }
 
             throw e;
