@@ -1,6 +1,8 @@
 package com.msa.user;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.msa.user.client.AccountDTO;
+import com.msa.user.client.StockDTO;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -15,13 +17,16 @@ import java.util.Map;
 @Setter
 @ToString
 @JsonIgnoreProperties({"authorities", "accountNonExpired", "claims",
-        "accountNonLocked", "credentialsNonExpired", "enabled", "password"})
+        "accountNonLocked", "credentialsNonExpired", "enabled", "passwd", "password"})
 public class UserDTO extends User {
     private Long id;
     private String email;
     private String passwd;
     private String name;
     private List<String> roleNames;
+
+    private AccountDTO account;
+    private StockDTO stock;
 
     public UserDTO(Long id, String email, String passwd, String name, List<String> roleNames) {
         super(name, passwd, roleNames.stream().map(SimpleGrantedAuthority::new).toList());

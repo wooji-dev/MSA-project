@@ -24,4 +24,8 @@ public class StockService {
         stock.setPrice(stock.getPrice().add(dto.getPrice()));
         return mapper.toDTO(repository.save(stock));
     }
+
+    public StockDTO getStock(Long userid) {
+        return mapper.toDTO(repository.findByUserid(userid).orElseThrow());
+    }
 }
