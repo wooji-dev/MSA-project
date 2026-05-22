@@ -24,4 +24,10 @@ public class AccountInternalController {
         return ResponseEntity.ok(account);
     }
 
+    @DeleteMapping("{userid}")
+    ResponseEntity<Void> deleteAccount(@PathVariable Long userid) {
+        service.deleteAccount(userid);
+        return ResponseEntity.noContent().build();
+    }
+
 }

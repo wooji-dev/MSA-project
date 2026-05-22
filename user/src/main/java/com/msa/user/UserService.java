@@ -19,18 +19,39 @@ public class UserService {
     private final AccountClient accountClient;
     private final StockClient stockClient;
 
-    @Transactional
+    // @Transactional
     public UserDTO regist(UserRegistDTO dto) {
-        User user = mapper.toEntity(dto);
-        user.setPasswd(passwordEncoder.encode(dto.getPasswd()));
-        user.addRole(UserRole.ROLE_USER);
-        User newer = repository.save(user);
-        Long userid = newer.getId();
+        boolean didRegistUser = false;
+        boolean didCreateAccount = false;
 
-        accountClient.createAccount(new AccountCreateDTO(newer.getName(), dto.getAccountPasswd(), userid));
-        stockClient.createStock(new StockDTO(1, BigDecimal.valueOf(1000), userid));
+        Long userid = null;
 
-        return mapper.toDTO(newer);
+        try {
+            User user = mapper.toEntity(dto);
+            user.setPasswd(passwordEncoder.encode(dto.getPasswd()));
+            user.addRole(UserRole.ROLE_USER);
+
+            User newer = repository.save(user);
+            userid = newer.getId();
+            didRegistUser = true;
+
+            accountClient.createAccount(new AccountCreateDTO(newer.getName(), dto.getAccountPasswd(), userid));
+            didCreateAccount = true;
+
+            stockClient.createStock(new StockDTO(1, BigDecimal.valueOf(1000), userid));
+
+            return mapper.toDTO(newer);
+        } catch (Exception e) {
+            if (userid != null) {
+                repository.deleteById(userid);
+            }
+
+            if (didCreateAccount) {
+                accountClient.deleteAccount(userid);
+            }
+
+            throw e;
+        }
     }
 
 
@@ -40,6 +61,13 @@ public class UserService {
         dto.setPasswd("");
         dto.setAccount(client.getAccountInfo(id));
         dto.setStock(client.getStockInfo(id));
+        return mapper.toDTO(user);
+    }
+
+    @Transactional
+    public UserDTO addPoint(Long id, Integer stocks) {
+        User user = repository.findById(id).orElseThrow();
+        user.setPoint(user.getPoint() + (stocks * 100));
         return mapper.toDTO(user);
     }
 }
