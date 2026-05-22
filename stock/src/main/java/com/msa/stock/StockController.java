@@ -12,8 +12,8 @@ public class StockController {
 
     // 주식 구매
     @PatchMapping("{userid}")
-    ResponseEntity<StockDTO> purchaseStock(@RequestBody StockPurchaseDTO dto){
-        var purchase = service.purchaseStock(dto);
-        return ResponseEntity.ok(purchase);
+    ResponseEntity<StockDTO> purchase(@RequestBody StockPurchaseDTO dto){
+        var stock = service.purchase(dto);
+        return ResponseEntity.ok(stock);
     }
 }

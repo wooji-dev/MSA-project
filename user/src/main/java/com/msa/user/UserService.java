@@ -65,9 +65,9 @@ public class UserService {
     }
 
     @Transactional
-    public UserDTO addPoint(Long id, Integer stocks) {
-        User user = repository.findById(id).orElseThrow();
-        user.setPoint(user.getPoint() + (stocks * 100));
-        return mapper.toDTO(user);
+    public UserDTO addPoint(AddPointDTO dto) {
+        User user = repository.findByIdForUpdate(dto.getUserid());
+        user.addPoint((dto.getCnt() * 100));
+        return mapper.toDTO(repository.save(user));
     }
 }

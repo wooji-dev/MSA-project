@@ -30,4 +30,16 @@ public class AccountInternalController {
         return ResponseEntity.noContent().build();
     }
 
+    @PutMapping("{userid}")
+    ResponseEntity<AccountDTO> deposit(@PathVariable Long userid, @RequestParam("amount") BigDecimal amount) {
+        var account = service.deposit(userid, amount);
+        return ResponseEntity.ok(account);
+    }
+
+    @PatchMapping("{userid}")
+    ResponseEntity<AccountDTO> withdrawal(@PathVariable Long userid, @RequestBody AccountWithdrawalDTO dto) {
+        var account = service.withdrawal(dto);
+        return ResponseEntity.ok(account);
+    }
+
 }
