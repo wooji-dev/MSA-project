@@ -31,3 +31,7 @@ spring:
 jwt:
   secret: JeTB8C1PYXBB4/A9/jas5gVmvZBxyw/7O8Ca4eizk2Q=
 
+client:
+  account: http://localhost:8082
+  stock: http://localhost:8083
+
