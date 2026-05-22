@@ -1,7 +1,7 @@
 @baseUrl=http://localhost:8082/api/accounts
 
 ### deposit
-PUT {{baseUrl}}/1?amount=2000
+PUT {{baseUrl}}/2?amount=10000000
 
 ### withdrawal
 PATCH {{baseUrl}}/1
